@@ -8,26 +8,21 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-
-    private $status_code = 200;
-
-    public function userSignUp(Request $request)
+    public function userRegister(Request $request)
     {
         $validator = Validator::make(
             $request->all(),
             [
                 'name' => 'required',
                 'email' => 'required|email',
-                'password' => 'required',
-                'phone' => 'required'
+                'password' => 'required'
             ]
         );
 
         if ($validator->fails()) {
             return response()->json(
                 [
-                    'status' => 'failed',
-                    'success' => false,
+                    'result' => false,
                     'message' => 'validation_error',
                     'errors' => $validator->errors()
                 ]
@@ -52,8 +47,7 @@ class UserController extends Controller
         if (!is_null($user_status)) {
             return response()->json(
                 [
-                    'status' => 'failed',
-                    'success' => false,
+                    'result' => false,
                     'message' => 'Whoops! email already registered'
                 ]
             );
@@ -64,8 +58,7 @@ class UserController extends Controller
         if (!is_null($user)) {
             return response()->json(
                 [
-                    'status' => $this->status_code,
-                    'success' => true,
+                    'result' => true,
                     'message' => 'Registration completed successfully',
                     'data' => $user
                 ]
@@ -73,8 +66,7 @@ class UserController extends Controller
         } else {
             return response()->json(
                 [
-                    'status' => 'failed',
-                    'success' => false,
+                    'result' => false,
                     'message' => 'Failed to register'
                 ]
             );
@@ -95,8 +87,9 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json(
                 [
-                    'status' => 'failed',
-                    'validation_error' => $validator->errors()
+                    'result' => false,
+                    'message' => 'validation_error',
+                    'errors' => $validator->errors()
                 ]
             );
         }
@@ -114,8 +107,7 @@ class UserController extends Controller
 
                 return response()->json(
                     [
-                        'status' => $this->status_code,
-                        'success' => true,
+                        'result' => true,
                         'message' => 'You have logged in successfully',
                         'data' => $user
                     ]
@@ -123,8 +115,7 @@ class UserController extends Controller
             } else {
                 return response()->json(
                     [
-                        'status' => 'failed',
-                        'success' => false,
+                        'result' => false,
                         'message' => 'Unable to login. Incorrect password.'
                     ]
                 );
@@ -132,8 +123,7 @@ class UserController extends Controller
         } else {
             return response()->json(
                 [
-                    'status' => 'failed',
-                    'success' => false,
+                    'result' => false,
                     'message' => 'Unable to login. Email doesn\'t exist.'
                 ]
             );
