@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function userRegister(Request $request)
+    public function registerUser(Request $request)
     {
         $validator = Validator::make(
             $request->all(),
@@ -22,7 +22,7 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json(
                 [
-                    'result' => false,
+                    'success' => false,
                     'message' => 'validation_error',
                     'errors' => $validator->errors()
                 ]
@@ -32,8 +32,7 @@ class UserController extends Controller
         $name = explode(' ', $request->name);
         $first_name = $name[0];
         $last_name = isset($name[1]) ? $name[1] : '';
-
-        $userDataArray = array(
+        $newUserData = array(
             'first_name' => $first_name,
             'last_name' => $last_name,
             'full_name' => $request->name,
@@ -42,39 +41,35 @@ class UserController extends Controller
             'phone' => $request->phone
         );
 
-        $user_status = User::where('email', $request->email)->first();
+        $isNewUserFlag = is_null(User::where('email', $request->email)->first());
+        $createdUserData = $isNewUserFlag ? User::create($newUserData) : null;
 
-        if (!is_null($user_status)) {
+        if (!is_null($createdUserData)) {
             return response()->json(
                 [
-                    'result' => false,
-                    'message' => 'Whoops! email already registered'
+                    'success' => true,
+                    'message' => 'Registration completed successfully.',
+                    'data' => $createdUserData
                 ]
             );
-        }
-
-        $user = User::create($userDataArray);
-
-        if (!is_null($user)) {
+        } elseif (!$isNewUserFlag) {
             return response()->json(
                 [
-                    'result' => true,
-                    'message' => 'Registration completed successfully',
-                    'data' => $user
+                    'success' => false,
+                    'message' => 'Whoops! The email has been registered.'
                 ]
             );
         } else {
             return response()->json(
                 [
-                    'result' => false,
-                    'message' => 'Failed to register'
+                    'success' => false,
+                    'message' => 'Failed to register. Please contact us.'
                 ]
             );
         }
     }
 
-    // ------------ [ User Login ] -------------------
-    public function userLogin(Request $request)
+    public function loginUser(Request $request)
     {
         $validator = Validator::make(
             $request->all(),
@@ -87,57 +82,53 @@ class UserController extends Controller
         if ($validator->fails()) {
             return response()->json(
                 [
-                    'result' => false,
+                    'success' => false,
                     'message' => 'validation_error',
                     'errors' => $validator->errors()
                 ]
             );
         }
 
-        // check if entered email exists in db
-        $email_status = User::where('email', $request->email)->first();
+        $userByEmail = User::where('email', $request->email)->first();
+        $hasEmailFlag = !is_null($userByEmail);
+        $checkPasswordFlag = $hasEmailFlag && $userByEmail->password == md5($request->password);
 
-        // if email exists then we will check password for the same email
-        if (!is_null($email_status)) {
-            $password_status = User::where('email', $request->email)->where('password', md5($request->password))->first();
-
-            // if password is correct
-            if (!is_null($password_status)) {
-                $user = $this->userDetail($request->email);
-
-                return response()->json(
-                    [
-                        'result' => true,
-                        'message' => 'You have logged in successfully',
-                        'data' => $user
-                    ]
-                );
-            } else {
-                return response()->json(
-                    [
-                        'result' => false,
-                        'message' => 'Unable to login. Incorrect password.'
-                    ]
-                );
-            }
+        if ($hasEmailFlag && $checkPasswordFlag) {
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'You have logged in successfully.',
+                    'data' => $userByEmail
+                ]
+            );
+        } elseif (!$hasEmailFlag) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Unable to login. Email doesn\'t exist.'
+                ]
+            );
+        } elseif (!$checkPasswordFlag) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Unable to login. Incorrect password.'
+                ]
+            );
         } else {
             return response()->json(
                 [
-                    'result' => false,
-                    'message' => 'Unable to login. Email doesn\'t exist.'
+                    'success' => false,
+                    'message' => 'Fail to login. Please contact us.'
                 ]
             );
         }
     }
 
-    // ------------------ [ User Detail ] ---------------------
-    public function userDetail($email)
+    public function readUserData($email)
     {
-        $user = array();
-        if ($email != '') {
-            $user = User::where('email', $email)->first();
-            return $user;
-        }
+        $user = $email != '' ? User::where('email', $email)->first() : array();
+        return $user;
     }
 
     public function test()
