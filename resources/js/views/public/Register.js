@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { Button, Form, FormGroup, Label, Input } from "reactstrap";
+import { Link } from "react-router-dom";
 import axios from "axios";
+import { Button, Form, FormGroup, Label, Input } from "reactstrap";
 import "../../../css/Register.css";
 
 export default class Register extends Component {
@@ -24,46 +25,59 @@ export default class Register extends Component {
         this.renderErrorField = this.renderErrorField.bind(this);
     }
 
-    // update register data by prop name and value
+    // unremark after test is completed
+    // componentDidMount() {
+    //     if (localStorage["isLoggedIn"]) {
+    //         this.props.history.push("/home");
+    //     }
+    // }
+
+    // update state by prop name and value
     handleFieldChange(e) {
         const { registerData } = this.state;
         registerData[e.target.name] = e.target.value;
         this.setState(registerData);
     }
 
-    // call register api then refresh registerData and message in state
+    // call register api
     handleSubmit(e) {
         e.preventDefault();
 
         this.setState({ isLoading: true });
 
-        const { history } = this.props;
-        axios.post("/api/register", this.state.registerData).then(response => {
-            this.setState({ isLoading: false });
-            if (response.data.result) {
-                history.push("/home");
-                // this.setState({
-                //     msg: response.data.message,
-                //     registerData: this.defaultRegister
-                // });
-            } else {
-                this.setState({ msg: response.data.message });
-                if (response.data.message === "validation_error") {
+        axios
+            .post("/api/register", this.state.registerData)
+            .then(response => {
+                this.setState({ isLoading: false });
+                if (response.data.success) {
+                    this.props.history.push("/home");
+                    // this.setState({
+                    //     msg: response.data.message,
+                    //     registerData: this.defaultRegister
+                    // });
+                } else if (response.data.errors) {
                     this.setState({
-                        errors: response.data.errors
+                        errors: response.data.errors,
+                        msg: ""
                     });
+                } else {
+                    this.setState({ errors: [], msg: response.data.message });
                 }
-            }
-            setTimeout(() => {
-                this.setState({ msg: "" });
-            }, 2000);
-        });
+                // setTimeout(() => {
+                //     this.setState({ msg: "" });
+                // }, 2000);
+            })
+            .catch(error => {
+                console.log(error);
+            });
     }
 
+    // evaluate whether specified field has error and return a boolean
     hasErrorField(field) {
         return !!this.state.errors[field];
     }
 
+    // call hasErrorField and if return true then render error message
     renderErrorField(field) {
         if (this.hasErrorField(field)) {
             return (
@@ -104,7 +118,7 @@ export default class Register extends Component {
                             }
                             type="email"
                             name="email"
-                            placeholder="Enter Email"
+                            placeholder="Enter email"
                             value={this.state.registerData.email}
                             onChange={this.handleFieldChange}
                         />
@@ -136,7 +150,7 @@ export default class Register extends Component {
                         />
                         {this.renderErrorField("password")}
                     </FormGroup>
-                    <p className="text-white">{this.state.msg}</p>
+                    <p className="text-danger">{this.state.msg}</p>
                     <Button className="text-center mb-4" color="success">
                         Register
                         {isLoading ? (
@@ -149,6 +163,9 @@ export default class Register extends Component {
                             <span />
                         )}
                     </Button>
+                    <Link to="/login" className="text-white ml-5">
+                        I'm already member
+                    </Link>
                 </Form>
             </div>
         );
