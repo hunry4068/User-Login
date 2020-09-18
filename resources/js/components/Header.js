@@ -1,56 +1,39 @@
-import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
+import React, { Component } from 'react';
+import { Link, withRouter } from 'react-router-dom';
 
 class Header extends Component {
-    constructor() {
-        super();
-        this.state = {
-            isLoggedIn: false,
-            user: {}
-        };
-        this.LogOut = this.logOut.bind(this);
+    constructor(props) {
+        super(props);
+
+        this.handleLogOut = this.handleLogOut.bind(this);
     }
 
-    // check if user is authenticated and storing authentication data as states if true
-    componentWillMount() {
-        let jsonState = localStorage["appState"];
-        if (jsonState) {
-            let appState = JSON.parse(jsonState);
-            if (
-                appState.hasOwnProperty("isLoggedIn") &&
-                appState.hasOwnProperty("user")
-            ) {
-            }
-            this.setState(appState);
-        }
-    }
+    handleLogOut(e) {
+        e.preventDefault();
 
-    logOut() {
-        let appState = {
-            isLoggedIn: false,
-            user: {}
-        };
-        localStorage["appState"] = JSON.stringify(appState);
-        this.setState(appState);
-        this.props.history.push("/login");
+        const defaultAppState = { isLoggedIn: false, userInfo: {} };
+        localStorage['appState'] = JSON.stringify(defaultAppState);
+
+        location.reload();
     }
 
     render() {
+        // Test: instead of using localStorage, apply this.props shared from Main component to read isLoogedIn
+        let headerMenuArr = this.props.appState.isLoggedIn
+            ? [<Link className='navbar-brand' key='home' to='/home'>Home</Link>,
+               <Link className='navbar-brand' key='logout' to='/' onClick={this.handleLogOut}>Log Out</Link>]
+            : [<Link className='navbar-brand' key='login 'to='/login'>Login</Link>,
+               <Link className='navbar-brand' key='register' to='/register'>Register</Link>];
+
         return (
-            <nav className="navbar navbar-expand-md navbar-light navbar-laravel">
-                <div className="container">
-                    <Link className="navbar-brand" to="/login">
-                        Login
-                    </Link>
-                    {this.state.isLoggedIn ? (
-                        <Link className="navbar-brand" to="/home">
-                            Home
-                        </Link>
-                    ) : (
-                        <Link className="navbar-brand" to="/register">
-                            Register
-                        </Link>
-                    )}
+            <nav className='navbar navbar-expand-md navbar-light navbar-laravel'>
+                <div className='container'>
+                    {headerMenuArr}
+                </div>
+                <div>
+                    <p className='text-primary'>LocalStorage[appState]:</p>
+                    <p className='text-secondary'>Val: {localStorage['appState']}</p>
+                    <p className='text-success'>Bool: {!!localStorage['appState']}</p>
                 </div>
             </nav>
         );
