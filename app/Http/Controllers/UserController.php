@@ -125,7 +125,7 @@ class UserController extends Controller
         }
     }
 
-    public function readUserData($email)
+    public function readUserInfo($email)
     {
         $user = $email != '' ? User::where('email', $email)->first() : array();
         return $user;
