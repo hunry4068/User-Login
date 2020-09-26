@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import axios from 'axios';
 
-import LoginFilter from '../../filters/LoginFilter'
+// import LoginFilter from '../../filters/LoginFilter'
 
 export default class Login extends Component {
     constructor(props) {
@@ -41,7 +41,12 @@ export default class Login extends Component {
                     const appState = { isLoggedIn: true, userInfo: response.data.data };
                     localStorage['appState'] = JSON.stringify(appState);
 
-                    location.reload();
+                    let { from } = this.props.location.state || { from: { pathname: "/home" } };
+
+                    /*  the history.replace cannot update the header's login btn to logout,
+                        use location.replace as an alternative but find some better solution in the furture */
+                    // this.props.history.replace(from);
+                    window.location.replace(from.pathname + from.search);
                 } else if (response.data.errors) {
                     this.setState({ errors: response.data.errors, msg: '' });
                 } else {
@@ -72,7 +77,7 @@ export default class Login extends Component {
 
         return (
             <React.Fragment>
-                <LoginFilter redirect='/home' />
+                {/* <LoginFilter redirect='/home' /> */}
 
                 <div>
                     <Form className='containers' onSubmit={this.handleSubmit}>

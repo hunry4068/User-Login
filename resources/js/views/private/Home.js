@@ -6,7 +6,7 @@ export default class Home extends Component {
     render() {
         return (
             <React.Fragment>
-                <LoginFilter redirect={this.props.location.pathname} />
+                {/* <LoginFilter redirect={this.props.location.pathname} /> */}
 
                 <h1>Here's body of Home.js</h1>
             </React.Fragment>

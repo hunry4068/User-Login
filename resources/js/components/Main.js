@@ -18,7 +18,7 @@ export default class Main extends Component{
     }
 
     // check localStorage['appState'] content and update current state
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const jsonState = localStorage['appState'];
         if (jsonState) {
             const appState = JSON.parse(jsonState);
